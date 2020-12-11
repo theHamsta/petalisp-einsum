@@ -6,7 +6,10 @@
                 :rank)
   (:import-from :alexandria
                 :iota)
-  (:export :einsum))
+  (:export :einsum
+           :*foreach-op*
+           :*reduce-op*
+           :*reduce-initial-value*))
 (in-package :petalisp-einsum)
 
 (defparameter *word-scanner* (ppcre:create-scanner "\\w+"))
