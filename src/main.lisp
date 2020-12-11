@@ -37,10 +37,13 @@
 (defun parse-spec (spec)
   (let ((splits (ppcre:split *split-scanner* spec)))
     (let ((input-specs (ppcre:all-matches-as-strings *word-scanner* (first splits)))
-          (given-output-specs (when (< 0 (length splits)) (ppcre:all-matches-as-strings *word-scanner* (second splits)))))
+          (given-output-specs (when (< 0 (length splits))
+                                (ppcre:all-matches-as-strings *word-scanner* (second splits)))))
       (let* ((input-axes (sort (reduce #'union (mapcar (lambda (x) (coerce x 'list)) input-specs)) #'char-lessp))
-             (output-specs (or given-output-specs (determine-output-specs input-specs)))
-             (reduce-axes (mapcar (lambda (x) (set-difference input-axes (coerce x 'list))) output-specs)))
+             (output-specs (or given-output-specs
+                               (determine-output-specs input-specs)))
+             (reduce-axes (mapcar (lambda (x) (set-difference input-axes (coerce x 'list)))
+                                  output-specs)))
         (make-einsum-spec
           :input-specs input-specs
           :output-specs output-specs
@@ -53,7 +56,8 @@
                   i
                   (reshape i (make-transformation :input-mask (make-list (rank i))
                                                   :output-mask (map 'list
-                                                                    (lambda (out-axis) (position out-axis (subseq in 0 (rank i))))
+                                                                    (lambda (out-axis)
+                                                                      (position out-axis (subseq in 0 (rank i))))
                                                                     (or all-axes (sort (copy-seq in) #'char-lessp)))))))
           inputs
           spec))
