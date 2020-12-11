@@ -28,6 +28,7 @@
     (ok (compute (einsum "i, i -> ij" (aops:rand '(3)) (aops:rand '(3)))))
     (ok (compute (einsum "i -> iiii" (aops:rand '(3)))))
     (ok (numberp (compute (einsum "i i" (aops:rand '(3)) (aops:rand '(3))))))
+    (ok (= 1 (rank (compute (einsum "i ij" (aops:rand '(3)) (aops:rand '(3 3)))))))
     (ok (array-shape (compute (einsum "ij -> ijji" (aops:rand '(3 4))))))
     (ok (array-shape (compute (einsum "ij kl -> ijkl" (aops:rand '(3 4)) (aops:rand '(3 4))))))
     (ok (multiple-value-call #'compute (einsum "ij, ji -> ij ji" (aops:rand '(3 3)) (aops:rand '(3 3)))))))
