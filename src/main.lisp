@@ -25,8 +25,6 @@
   input-axes
   reduce-axes)
 
-(declaim (optimize (debug 3)))
-
 (defun determine-output-specs (input-specs)
   (let ((non-unique-axes nil))
     (list (sort
