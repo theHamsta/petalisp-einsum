@@ -25,7 +25,7 @@
     (ok (compute (einsum "ij -> i" (aops:rand '(3 3)))))
     (ok (compute (einsum "i, j -> ij" (aops:rand '(3)) (aops:rand '(3)))))
     (ok (compute (einsum "i, j -> iji" (aops:rand '(3)) (aops:rand '(3)))))
-    (ok (compute (einsum "i, j -> ij" (aops:rand '(3)) (aops:rand '(3)))))
+    (ok (compute (einsum "i, i -> ij" (aops:rand '(3)) (aops:rand '(3)))))
     (ok (compute (einsum "i -> iiii" (aops:rand '(3)))))
     (ok (numberp (compute (einsum "i i" (aops:rand '(3)) (aops:rand '(3))))))
     (ok (array-shape (compute (einsum "ij -> ijji" (aops:rand '(3 4))))))
