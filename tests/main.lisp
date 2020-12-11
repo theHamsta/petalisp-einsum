@@ -23,7 +23,8 @@
     (ok (compute (einsum "ij, ji -> ij" (aops:rand '(3 3)) (aops:rand '(3 3)))))
     (ok (compute (einsum "jik, ijk -> ij" (aops:rand '(3 3)) (aops:rand '(3 3)))))
     (ok (compute (einsum "ij -> i" (aops:rand '(3 3)))))
-    (ok (compute (einsum "i, j -> ij" (aops:rand '(3)) (aops:rand '(3)))))
+    (ok (compute (einsum "  i,
+                         j     ->           ij " (aops:rand '(3)) (aops:rand '(3)))))
     (ok (compute (einsum "ii, ij -> ij" (aops:rand '(3)) (aops:rand '(3 3)))))
     (ok (compute (einsum "i, j -> iji" (aops:rand '(3)) (aops:rand '(3)))))
     (ok (compute (einsum "i, i -> ij" (aops:rand '(3)) (aops:rand '(3)))))
