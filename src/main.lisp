@@ -29,7 +29,7 @@
   (let ((non-unique-axes nil))
     (list (sort
             (reduce (lambda (a b) (let ((common (intersection a b)))
-                                    (setf non-unique-axes (concatenate 'list common non-unique-axes))
+                                    (setf non-unique-axes (append common non-unique-axes))
                                     (set-difference (union a b) non-unique-axes)))
                     (mapcar (lambda (x) (coerce x 'list)) input-specs))
             #'char-lessp))))
