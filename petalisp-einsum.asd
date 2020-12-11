@@ -8,7 +8,7 @@
   :components ((:module "src"
                 :components
                 ((:file "main"))))
-  :description ""
+  :description "Implementation of Numpy's einsum function for Petalisp"
   :in-order-to ((test-op (test-op "petalisp-einsum/tests"))))
 
 (defsystem "petalisp-einsum/tests"
