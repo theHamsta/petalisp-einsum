@@ -48,7 +48,7 @@
           :input-axes input-axes
           :reduce-axes reduce-axes)))))
 
-(defun prepare-arrays (inputs spec &optional all-axes)
+(defun prepare-arrays (inputs specs &optional all-axes)
   (mapcar (lambda (i in)
             (if (= 0 (rank i))
                   i
@@ -58,7 +58,7 @@
                                                                       (position out-axis (subseq in 0 (rank i))))
                                                                     (or all-axes (sort (copy-seq in) #'char-lessp)))))))
           inputs
-          spec))
+          specs))
 
 (defun einsum (spec &rest arrays)
   (let* ((spec (parse-spec spec))
