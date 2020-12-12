@@ -24,13 +24,15 @@
   reduce-axes)
 
 (defun determine-output-specs (input-specs)
-  (let ((non-unique-axes nil))
-    (list (sort
-            (reduce (lambda (a b) (let ((common (intersection a b)))
-                                    (setf non-unique-axes (append common non-unique-axes))
-                                    (set-difference (union a b) non-unique-axes)))
-                    (mapcar (lambda (x) (coerce x 'list)) input-specs))
-            #'char-lessp))))
+  (list
+    (unless (= 1 (length input-specs)) ; One entry only? Reduce over all output axis
+      (let ((non-unique-axes nil))
+        (sort
+          (reduce (lambda (a b) (let ((common (intersection a b)))
+                                  (setf non-unique-axes (append common non-unique-axes))
+                                  (set-difference (union a b) non-unique-axes)))
+                  (mapcar (lambda (x) (coerce x 'list)) input-specs))
+          #'char-lessp)))))
 
 (defun parse-spec (spec)
   (let ((splits (ppcre:split *split-scanner* spec)))
@@ -40,7 +42,7 @@
       (let* ((input-axes (sort (reduce #'union (mapcar (lambda (x) (coerce x 'list)) input-specs)) #'char-lessp))
              (output-specs (or given-output-specs
                                (determine-output-specs input-specs)))
-             (reduce-axes (mapcar (lambda (x) (set-difference input-axes (coerce x 'list)))
+             (reduce-axes (mapcar (lambda (x) (sort (set-difference input-axes (coerce x 'list)) #'char-lessp))
                                   output-specs)))
         (make-einsum-spec
           :input-specs input-specs
@@ -65,14 +67,14 @@
          (prepared-inputs (prepare-arrays arrays (einsum-spec-input-specs spec) (einsum-spec-input-axes spec)))
          (common-result (apply #'α `(,*foreach-op* ,@prepared-inputs)))
          (reduced-results (mapcar (lambda (s) 
-                                    (loop for axis in s
+                                    (loop for axis in (reverse s)
                                           with tmp = common-result
                                           do (setf tmp (β* *reduce-op*
                                                            *reduce-initial-value*
                                                            tmp
                                                            (position axis (einsum-spec-input-axes spec))))
                                           finally (return tmp)))
-                          (reverse (einsum-spec-reduce-axes spec)))))
+                          (einsum-spec-reduce-axes spec))))
       (values-list (prepare-arrays reduced-results (einsum-spec-output-specs spec)))))
 
 (defun einsum* (spec arrays &optional (foreach-op #'*) (reduce-op #'+) reduce-initial-value)
