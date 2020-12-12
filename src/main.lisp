@@ -67,11 +67,10 @@
          (reduced-results (mapcar (lambda (s) 
                                     (loop for axis in s
                                           with tmp = common-result
-                                          do (progn
-                                               (setf tmp (β* *reduce-op*
+                                          do (setf tmp (β* *reduce-op*
                                                            *reduce-initial-value*
                                                            tmp
-                                                           (position axis (einsum-spec-input-axes spec)))))
+                                                           (position axis (einsum-spec-input-axes spec))))
                                           finally (return tmp)))
                           (einsum-spec-reduce-axes spec))))
       (values-list (prepare-arrays reduced-results (einsum-spec-output-specs spec)))))
