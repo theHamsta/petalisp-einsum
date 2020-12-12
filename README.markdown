@@ -1,5 +1,8 @@
 # petalisp-einsum
 
+This packages tries to implement the functionality of (Numpy's einsum function)[https://numpy.org/doc/stable/reference/generated/numpy.einsum.html]
+for (Petalisp)[https://github.com/marcoheisig/Petalisp].
+
 ## Usage
 
 The only exported function of this package is `einsum` and its variant `einsum*`.
