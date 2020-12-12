@@ -11,6 +11,8 @@
 
 (defparameter *mat-a* (aops:rand '(4 3)))
 (defparameter *mat-b* (aops:rand '(3 5)))
+(defparameter *vec-a* (aops:rand '(3)))
+(defparameter *vec-b* (aops:rand '(3)))
 
 (deftest test-parse-spec
   (testing "Parsing of the specification"
@@ -46,5 +48,7 @@
     (ok (approximately-equal (compute (einsum "ijk, jki -> ik" *mat-a* *mat-b*))
                              (compute (matmul *mat-a* *mat-b*))))))
 
-
-
+(deftest test-start-variant
+  (testing "You can use alternative functions"
+    (ok (approximately-equal (compute (einsum* "i, i" (list *vec-a* *vec-b*) #'max #'min))
+                             (compute (β #'min (α #'max *vec-a* *vec-b*)))))))

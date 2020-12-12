@@ -2,7 +2,7 @@
 
 ## Usage
 
-The only exported function of this package is `einsum`.
+The only exported function of this package is `einsum` and its variant `einsum*`.
 It tries to emulate the behavior of Numpy's/PyTorch's einsum function.
 
 E. g. the following expression will calculate the matrix product of two arrays.
@@ -22,6 +22,12 @@ So the following will calculate the matrix product and its transpose (commas are
 ```lisp
 (multiple-value-call #'compute (einsum "ij, jk -> ik ki" *mat-a* *mat-b*))
 ```
+
+The stared version allows to set alternatives for the elementwise operation and reduction.
+
+```lisp
+(petalisp:compute (einsum "ij jk" (list *mat-a* *mat-b*) #'max #'min))
+``` 
 
 ## Installation
 

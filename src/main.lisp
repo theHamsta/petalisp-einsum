@@ -7,9 +7,7 @@
   (:import-from :alexandria
                 :iota)
   (:export :einsum
-           :*foreach-op*
-           :*reduce-op*
-           :*reduce-initial-value*))
+           :einsum*))
 (in-package :petalisp-einsum)
 
 (defparameter *word-scanner* (ppcre:create-scanner "\\w+"))
@@ -17,7 +15,7 @@
 (defparameter *split-scanner* (ppcre:create-scanner "->"))
 (defparameter *foreach-op* #'*)
 (defparameter *reduce-op* #'+)
-(defparameter *reduce-initial-value* 0)
+(defparameter *reduce-initial-value* nil)
 
 (defstruct (einsum-spec)
   input-specs
@@ -77,3 +75,9 @@
                                           finally (return tmp)))
                           (einsum-spec-reduce-axes spec))))
       (values-list (prepare-arrays reduced-results (einsum-spec-output-specs spec)))))
+
+(defun einsum* (spec arrays &optional (foreach-op #'*) (reduce-op #'+) reduce-initial-value)
+  (let ((*foreach-op* foreach-op)
+        (*reduce-op* reduce-op)
+        (*reduce-initial-value* reduce-initial-value))
+    (apply #'einsum `(,spec ,@arrays))))
