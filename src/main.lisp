@@ -72,7 +72,7 @@
                                                            tmp
                                                            (position axis (einsum-spec-input-axes spec))))
                                           finally (return tmp)))
-                          (einsum-spec-reduce-axes spec))))
+                          (reverse (einsum-spec-reduce-axes spec)))))
       (values-list (prepare-arrays reduced-results (einsum-spec-output-specs spec)))))
 
 (defun einsum* (spec arrays &optional (foreach-op #'*) (reduce-op #'+) reduce-initial-value)
