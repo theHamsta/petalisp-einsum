@@ -31,7 +31,7 @@ The stared version allows to set alternatives for the elementwise operation and 
 
 ## Installation
 
-With [https://www.quicklisp.org/beta/][quicklisp] installed, clone this
+With [quicklisp](https://www.quicklisp.org/beta/) installed, clone this
 repository to your local projects folder and then load it via quicklisp.
 
 ```lisp
