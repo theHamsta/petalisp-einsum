@@ -2,8 +2,11 @@
   (:use :cl
         :petalisp)
   (:import-from :petalisp.core
-                :make-transformation
-                :rank)
+                :lazy-array-shape
+                :rank
+                :lazy-reshape
+                :lazy-array
+                :make-shape)
   (:import-from :alexandria
                 :iota)
   (:export :einsum
@@ -17,6 +20,7 @@
 (defparameter *reduce-op* #'+)
 (defparameter *reduce-initial-value* nil)
 
+(declaim (optimize (debug 3)))
 (defstruct (einsum-spec)
   input-specs
   output-specs
@@ -39,7 +43,8 @@
     (let ((input-specs (ppcre:all-matches-as-strings *word-scanner* (first splits)))
           (given-output-specs (when (< 0 (length splits))
                                 (ppcre:all-matches-as-strings *word-scanner* (second splits)))))
-      (let* ((input-axes (sort (reduce #'union (mapcar (lambda (x) (coerce x 'list)) input-specs)) #'char-lessp))
+      (let* ((input-axes (remove-duplicates
+                           (sort (reduce #'union (mapcar (lambda (x) (coerce x 'list)) input-specs)) #'char-lessp)))
              (output-specs (or given-output-specs
                                (determine-output-specs input-specs)))
              (reduce-axes (mapcar (lambda (x) (sort (set-difference input-axes (coerce x 'list)) #'char-lessp))
@@ -50,20 +55,39 @@
           :input-axes input-axes
           :reduce-axes reduce-axes)))))
 
+(defun subseq-with-extend (sequence stop-index)
+  (if (> stop-index (length sequence))
+      (subseq (CONCATENATE 'list sequence sequence) 0 stop-index)
+      (subseq sequence 0 stop-index)))
+
 (defun prepare-arrays (inputs specs &optional all-axes)
   (mapcar (lambda (i in)
-            (if (= 0 (rank i))
+            (let* ((i (lazy-array i))
+                   (out-rank (length (remove-duplicates in)))
+                   (sorted-spec (or all-axes (sort (copy-seq in) #'char-lessp)))
+                   (transformation (make-transformation :input-mask (make-list out-rank)
+                                                        :output-mask (map 'list
+                                                                          (lambda (out-axis)
+                                                                            (position out-axis in))
+                                                                          (subseq-with-extend sorted-spec (rank i)))))
+                   )
+              (if (= 0 (rank i))
                   i
-                  (reshape i (make-transformation :input-mask (make-list (rank i))
-                                                  :output-mask (map 'list
-                                                                    (lambda (out-axis)
-                                                                      (position out-axis (subseq in 0 (rank i))))
-                                                                    (or all-axes (sort (copy-seq in) #'char-lessp)))))))
+                  (lazy-reshape i
+                                (make-shape
+                                  (map 'list (lambda (out-axis)
+                                               (let ((pos (position out-axis (subseq-with-extend sorted-spec (rank i)))))
+                                                 (if pos
+                                                     (nth pos (shape-ranges (lazy-array-shape (lazy-array i))))
+                                                     (petalisp.core::make-range 1 2 1))))
+                                       (remove-duplicates in)))
+                                transformation))))
           inputs
           specs))
 
 (defun einsum (spec &rest arrays)
   (let* ((spec (parse-spec spec))
+         (foo       (format t "~A~%" spec))
          (prepared-inputs (prepare-arrays arrays (einsum-spec-input-specs spec) (einsum-spec-input-axes spec)))
          (common-result (apply #'α `(,*foreach-op* ,@prepared-inputs)))
          (reduced-results (mapcar (lambda (s) 

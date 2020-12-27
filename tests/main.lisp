@@ -2,6 +2,7 @@
   (:use :cl
         :petalisp-einsum
         :petalisp
+        :petalisp.core
         :rove)
   (:import-from :petalisp.test-suite
                 :approximately-equal)
@@ -48,7 +49,7 @@
   (testing "It does the intended thing"
     (ok (approximately-equal (compute (einsum "jik, ikj -> jk" *mat-a* *mat-b*))
                              (compute (matmul *mat-a* *mat-b*))))
-    (ok (approximately-equal (compute (einsum "ij, jk -> ik" *mat-a* *mat-b*))
+    (ok (approximately-equal (compute (einsum "ij, jk -> ijk" *mat-a* *mat-b*))
                              (compute (matmul *mat-a* *mat-b*))))
     (ok (approximately-equal (compute (einsum "ij jk" *mat-a* *mat-b*))
                              (compute (matmul *mat-a* *mat-b*))))
@@ -60,9 +61,27 @@
     (ok (approximately-equal (compute (einsum* "i, i" (list *vec-a* *vec-b*) #'max #'min))
                              (compute (β #'min (α #'max *vec-a* *vec-b*)))))))
 
-;(deftest test-diagonal-entries
-  ;(testing "It can extract diagonal entries"
-    ;(ok (approximately-equal (compute (einsum "ii" #2A((1 5 5)
-                                                       ;(5 2 5)
-                                                       ;(5 5 3))))
-                             ;#(1 2 3)))))
+(deftest test-diagonal-entries
+  (testing "It can extract diagonal entries"
+    (ok (approximately-equal (compute (einsum "ii -> i" #2A((1 5 5)
+                                                            (5 2 5)
+                                                            (5 5 3))))
+                             #(1 2 3)))
+    (ok (approximately-equal (compute (einsum "ii" #2A((1 5 5)
+                                                       (5 2 5)
+                                                       (5 5 3))))
+                             6))))
+
+(deftest prepare-arrays-entries
+  (testing "prepared-arrays joyfully transforms arrays"
+    (ok (equalp (lazy-array-shape (first (petalisp-einsum::prepare-arrays (list #2A((1 1) (2 3) (4 5))) '("ijk"))))
+        (~ 3 ~ 2 ~ 1)))
+    (ok (equalp (lazy-array-shape (first (petalisp-einsum::prepare-arrays (list #2A((1 1) (2 3) (4 5))) '("jik"))))
+        (~ 2 ~ 3 ~ 1)))
+    (ok (equalp (lazy-array-shape (first (petalisp-einsum::prepare-arrays (list #2A((1 1) (2 3) (4 5))) '("kji"))))
+        (~ 1 ~ 2 ~ 3)))
+    (ok (equalp (lazy-array-shape (first (petalisp-einsum::prepare-arrays (list #2A((1 1) (2 3) (4 5))) '("kji"))))
+        (~ 1 ~ 2 ~ 3)))
+    (ok (equalp (lazy-array-shape (first (petalisp-einsum::prepare-arrays (list #2A((1 1) (2 3) (4 5))) '("j") "ij")))
+        (~ 2)))
+    ))
