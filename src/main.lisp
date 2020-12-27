@@ -57,37 +57,40 @@
 
 (defun subseq-with-extend (sequence stop-index)
   (if (> stop-index (length sequence))
-      (subseq (CONCATENATE 'list sequence sequence) 0 stop-index)
+      (subseq (concatenate 'list sequence sequence sequence sequence) 0 stop-index)
       (subseq sequence 0 stop-index)))
+
+(defun join-spaces (spec all-axes)
+  (if all-axes
+
+      spec))
 
 (defun prepare-arrays (inputs specs &optional all-axes)
   (mapcar (lambda (i in)
             (let* ((i (lazy-array i))
-                   (out-rank (length (remove-duplicates in)))
+                   (out-rank (if all-axes (length all-axes) (length (remove-duplicates in))))
                    (sorted-spec (or all-axes (sort (copy-seq in) #'char-lessp)))
                    (transformation (make-transformation :input-mask (make-list out-rank)
                                                         :output-mask (map 'list
                                                                           (lambda (out-axis)
-                                                                            (position out-axis in))
-                                                                          (subseq-with-extend sorted-spec (rank i)))))
-                   )
+                                                                            (position out-axis sorted-spec))
+                                                                          (subseq-with-extend in (rank i))))))
               (if (= 0 (rank i))
                   i
                   (lazy-reshape i
                                 (make-shape
                                   (map 'list (lambda (out-axis)
-                                               (let ((pos (position out-axis (subseq-with-extend sorted-spec (rank i)))))
+                                               (let ((pos (position out-axis (subseq-with-extend in (rank i)))))
                                                  (if pos
                                                      (nth pos (shape-ranges (lazy-array-shape (lazy-array i))))
-                                                     (petalisp.core::make-range 1 2 1))))
-                                       (remove-duplicates in)))
+                                                     (petalisp.core::make-range 0 1 1))))
+                                       (remove-duplicates sorted-spec)))
                                 transformation))))
           inputs
           specs))
 
 (defun einsum (spec &rest arrays)
   (let* ((spec (parse-spec spec))
-         (foo       (format t "~A~%" spec))
          (prepared-inputs (prepare-arrays arrays (einsum-spec-input-specs spec) (einsum-spec-input-axes spec)))
          (common-result (apply #'α `(,*foreach-op* ,@prepared-inputs)))
          (reduced-results (mapcar (lambda (s) 
