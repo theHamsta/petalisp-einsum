@@ -10,6 +10,16 @@
                 :matmul))
 (in-package :petalisp-einsum/tests/main)
 
+;; Needed if testing with petalisp-cuda
+(defmethod approximately-equal ((a t) (b single-float))
+  (< (abs (- a b)) (* 64 single-float-epsilon)))
+(defmethod approximately-equal ((a single-float) (b t))
+  (< (abs (- a b)) (* 64 single-float-epsilon)))
+(defmethod approximately-equal ((a t) (b double-float))
+  (< (abs (- a b)) (* 64 double-float-epsilon)))
+(defmethod approximately-equal ((a double-float) (b t))
+  (< (abs (- a b)) (* 64 double-float-epsilon)))
+
 (defparameter *mat-a* (aops:rand '(4 3)))
 (defparameter *mat-b* (aops:rand '(3 5)))
 (defparameter *vec-a* (aops:rand '(3)))
