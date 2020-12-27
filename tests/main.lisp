@@ -33,15 +33,15 @@
     (ok (numberp (compute (einsum "ijk ijk" (aops:rand '(3 5 4)) 1))))
     (ok (= 1 (petalisp.core:rank (compute (einsum "ijk ik" (aops:rand '(3 5 4)) 1)))))
     (ok (numberp (compute (einsum "ijk" (aops:rand '(3 5 4))))))
-    ;(ok (compute (einsum "i, j -> iji" (aops:rand '(3)) (aops:rand '(3)))))
     (ok (compute (einsum "i, i -> ij" (aops:rand '(3)) (aops:rand '(3)))))
     (ok (compute (einsum "i -> ikkk" (aops:rand '(3)))))
-   ; (ok (compute (einsum "i -> iiii" (aops:rand '(3)))))
     (ok (numberp (compute (einsum "i i" (aops:rand '(3)) (aops:rand '(3))))))
     (ok (= 1 (rank (compute (einsum "i ij" (aops:rand '(3)) (aops:rand '(3 3)))))))
     (ok (array-shape (compute (einsum "ij -> ijkl" (aops:rand '(3 4))))))
-    ;; not possible with current Petalisp master. Cannot have same input axis in output mask.
+    ;; not possible now because we decided that ii means (τ (i)  (i i))
     ;(ok (array-shape (compute (einsum "ij -> ijji" (aops:rand '(3 4))))))
+    ;(ok (compute (einsum "i -> iiii" (aops:rand '(3)))))
+    ;(ok (compute (einsum "i, j -> iji" (aops:rand '(3)) (aops:rand '(3)))))
     (ok (array-shape (compute (einsum "ij kl -> ijkl" (aops:rand '(3 4)) (aops:rand '(3 4))))))
     (ok (multiple-value-call #'compute (einsum "ij, ji -> ij ji" (aops:rand '(3 3)) (aops:rand '(3 3)))))))
 
@@ -62,7 +62,7 @@
                              (compute (β #'min (α #'max *vec-a* *vec-b*)))))))
 
 (deftest test-diagonal-entries
-  (testing "It can extract diagonal entries"
+  (testing "It can extract diagonal entries (only works with hacked Petalisp)"
     (ok (approximately-equal (compute (einsum "ii -> i" #2A((1 5 5)
                                                             (5 2 5)
                                                             (5 5 3))))
