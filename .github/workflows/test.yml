@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         lisp: [sbcl-bin, ccl]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
          
     # run the job on every combination of "lisp" and "os" above
     runs-on: ${{ matrix.os }}
@@ -62,4 +62,4 @@ jobs:
       shell: bash
       run: |
         ros install fukamachi/rove
-        /home/runner/.roswell/bin/rove petalisp-einsum.asd
+        ~/.roswell/bin/rove petalisp-einsum.asd
