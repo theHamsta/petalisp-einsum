@@ -20,7 +20,6 @@
 (defparameter *reduce-op* #'+)
 (defparameter *reduce-initial-value* nil)
 
-(declaim (optimize (debug 3)))
 (defstruct (einsum-spec)
   input-specs
   output-specs
