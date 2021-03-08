@@ -4,7 +4,7 @@
   (:import-from :petalisp.core
                 :lazy-array-shape
                 :rank
-                :lazy-reshape
+                :lazy-ref
                 :lazy-array
                 :make-shape)
   (:import-from :alexandria
@@ -25,6 +25,16 @@
   output-specs
   input-axes
   reduce-axes)
+
+(defun β* (f z x &optional axis)
+  (cond ((empty-array-p x) z)
+        ((typep axis 'rank)
+         (lazy-reduce f (move-axis-to-front x axis)))
+        ((null axis)
+         (loop repeat (rank x)
+               do (setf x (lazy-reduce f x))
+               finally (return x)))
+        (t (error "Not a valid axis: ~S" axis))))
 
 (defun determine-output-specs (input-specs)
   (list
@@ -76,22 +86,22 @@
                                                                           (subseq-with-extend in (rank i))))))
               (if (= 0 (rank i))
                   i
-                  (lazy-reshape i
-                                (make-shape
-                                  (map 'list (lambda (out-axis)
-                                               (let ((pos (position out-axis (subseq-with-extend in (rank i)))))
-                                                 (if pos
-                                                     (nth pos (shape-ranges (lazy-array-shape (lazy-array i))))
-                                                     (petalisp.core::make-range 0 1 1))))
-                                       (remove-duplicates sorted-spec)))
-                                transformation))))
+                  (lazy-ref i
+                            (make-shape
+                              (map 'list (lambda (out-axis)
+                                           (let ((pos (position out-axis (subseq-with-extend in (rank i)))))
+                                             (if pos
+                                                 (nth pos (shape-ranges (lazy-array-shape (lazy-array i))))
+                                                 (petalisp.core::make-range 0 1 1))))
+                                   (remove-duplicates sorted-spec)))
+                            transformation))))
           inputs
           specs))
 
 (defun einsum (spec &rest arrays)
   (let* ((spec (parse-spec spec))
          (prepared-inputs (prepare-arrays arrays (einsum-spec-input-specs spec) (einsum-spec-input-axes spec)))
-         (common-result (apply #'α `(,*foreach-op* ,@prepared-inputs)))
+         (common-result (apply #'lazy `(,*foreach-op* ,@prepared-inputs)))
          (reduced-results (mapcar (lambda (s) 
                                     (loop for axis in (reverse s)
                                           with tmp = common-result
@@ -100,8 +110,8 @@
                                                            tmp
                                                            (position axis (einsum-spec-input-axes spec))))
                                           finally (return tmp)))
-                          (einsum-spec-reduce-axes spec))))
-      (values-list (prepare-arrays reduced-results (einsum-spec-output-specs spec)))))
+                                  (einsum-spec-reduce-axes spec))))
+    (values-list (prepare-arrays reduced-results (einsum-spec-output-specs spec)))))
 
 (defun einsum* (spec arrays &optional (foreach-op #'*) (reduce-op #'+) reduce-initial-value)
   (let ((*foreach-op* foreach-op)

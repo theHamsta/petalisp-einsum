@@ -69,7 +69,7 @@
 (deftest test-start-variant
   (testing "You can use alternative functions"
     (ok (approximately-equal (compute (einsum* "i, i" (list *vec-a* *vec-b*) #'max #'min))
-                             (compute (β #'min (α #'max *vec-a* *vec-b*)))))))
+                             (compute (lazy-reduce #'min (lazy #'max *vec-a* *vec-b*)))))))
 
 (deftest test-diagonal-entries
   (testing "It can extract diagonal entries (only works with hacked Petalisp)"
