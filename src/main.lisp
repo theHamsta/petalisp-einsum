@@ -10,7 +10,8 @@
   (:import-from :alexandria
                 :iota)
   (:export :einsum
-           :einsum*))
+           :einsum*
+           :β*))
 (in-package :petalisp-einsum)
 
 (defparameter *word-scanner* (ppcre:create-scanner "\\w+"))
